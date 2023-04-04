@@ -1,25 +1,32 @@
 package com.study.security.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
 @Slf4j
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+    @Autowired
+    UserDetailsService userDetailsService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -29,7 +36,7 @@ public class SecurityConfig {
 
         http
                 .formLogin()
-                .loginPage("/loginPage")  // 직접 정의한 로그인 페이지로 이동
+//                .loginPage("/loginPage")  // 직접 정의한 로그인 페이지로 이동
                 .defaultSuccessUrl("/")  // successHandler() 없는 경우, 이 defaultSuccessUrl이 동작
                 .failureUrl("/login")
                 .usernameParameter("userId") // default 는 username
@@ -50,6 +57,30 @@ public class SecurityConfig {
                     }
                 })
                 .permitAll(); // .loginPage("/loginPage") 접근하는 경우 인증 받지 않도록 함
+
+        http.logout()
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("")  // 이동할 페이지
+                .addLogoutHandler(new LogoutHandler() {
+                    @Override
+                    public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
+                        HttpSession session = request.getSession();
+                        session.invalidate();
+                    }
+                })
+                .deleteCookies("remember-me")
+                .logoutSuccessHandler(new LogoutSuccessHandler() {
+                    @Override
+                    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+                        response.sendRedirect("/login");
+                    }
+                })
+                .and()
+                .rememberMe()
+                .rememberMeParameter("remember")
+                .tokenValiditySeconds(3600)
+                .userDetailsService(userDetailsService)
+        ;
         return http.build();
     }
 }
