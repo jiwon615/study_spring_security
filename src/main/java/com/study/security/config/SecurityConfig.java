@@ -8,7 +8,11 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -25,23 +29,56 @@ import java.io.IOException;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-    @Autowired
-    UserDetailsService userDetailsService;
+//    @Autowired
+//    UserDetailsService userDetailsService;
+
+    @Bean
+    public UserDetailsManager users() {
+
+        UserDetails user = User.builder()
+                .username("user")
+                .password("{noop}1111")
+                .roles("USER")
+                .build();
+
+        UserDetails sys = User.builder()
+                .username("sys")
+                .password("{noop}1111")
+                .roles("SYS")
+                .build();
+
+        UserDetails admin = User.builder()
+                .username("admin")
+                .password("{noop}1111")
+                .roles("ADMIN", "SYS", "USER")
+                .build();
+
+        return new InMemoryUserDetailsManager(user, sys, admin);
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        /**
+         * 인가 API
+         */
         http
                 .authorizeRequests()  // 요청에 대한 보안 검사를 하겠다
-                .anyRequest().authenticated(); // 현재는 어떤 요청에도 인증 받도록 설정
+                .antMatchers("/user").hasRole("USER")
+                .antMatchers("/admin/pay").hasRole("ADMIN")
+                .antMatchers("/admin/**").access("hasRole('ADMIN') or hasRole('SYS')")
+                .anyRequest().authenticated();
 
+        /**
+         * 인증 API
+         */
         // FormLogin API
-        http.formLogin()
+        http.formLogin();
 //                .loginPage("/loginPage")  // 직접 정의한 로그인 페이지로 이동
-                .defaultSuccessUrl("/")  // successHandler() 없는 경우, 이 defaultSuccessUrl이 동작
-                .failureUrl("/login")
-                .usernameParameter("userId") // default 는 username
-                .passwordParameter("passwd") // default 는 password
-                .loginProcessingUrl("/login_proc")
+//                .defaultSuccessUrl("/")  // successHandler() 없는 경우, 이 defaultSuccessUrl이 동작
+//                .failureUrl("/login")
+//                .usernameParameter("userId") // default 는 username
+//                .passwordParameter("passwd") // default 는 password
+//                .loginProcessingUrl("/login_proc")
 //                .successHandler(new AuthenticationSuccessHandler() {
 //                    @Override
 //                    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -56,37 +93,37 @@ public class SecurityConfig {
 //                        response.sendRedirect("/login");
 //                    }
 //                })
-                .permitAll(); // .loginPage("/loginPage") 접근하는 경우 인증 받지 않도록 함
+//                .permitAll(); // .loginPage("/loginPage") 접근하는 경우 인증 받지 않도록 함
 
         // Logout API
-        http.logout()
-                .logoutUrl("/logout")
-                .logoutSuccessUrl("")  // 이동할 페이지
-                .addLogoutHandler(new LogoutHandler() {
-                    @Override
-                    public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
-                        HttpSession session = request.getSession();
-                        session.invalidate();
-                    }
-                })
-                .deleteCookies("remember-me")
-                .logoutSuccessHandler(new LogoutSuccessHandler() {
-                    @Override
-                    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-                        response.sendRedirect("/login");
-                    }
-                })
-
-                // REMEMBER ME API
-                .and().rememberMe()
-                .rememberMeParameter("remember")
-                .tokenValiditySeconds(3600)
-                .userDetailsService(userDetailsService);
+//        http.logout()
+//                .logoutUrl("/logout")
+//                .logoutSuccessUrl("")  // 이동할 페이지
+//                .addLogoutHandler(new LogoutHandler() {
+//                    @Override
+//                    public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
+//                        HttpSession session = request.getSession();
+//                        session.invalidate();
+//                    }
+//                })
+//                .deleteCookies("remember-me")
+//                .logoutSuccessHandler(new LogoutSuccessHandler() {
+//                    @Override
+//                    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+//                        response.sendRedirect("/login");
+//                    }
+//                })
+//
+//                // REMEMBER ME API
+//                .and().rememberMe()
+//                .rememberMeParameter("remember")
+//                .tokenValiditySeconds(3600)
+//                .userDetailsService(userDetailsService);
 
         // 동시세션 제어 API
-        http.sessionManagement()
-                .maximumSessions(1)
-                .maxSessionsPreventsLogin(false);
+//        http.sessionManagement()
+//                .maximumSessions(1)
+//                .maxSessionsPreventsLogin(false);
 
         return http.build();
     }
