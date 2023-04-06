@@ -5,8 +5,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 //@ComponentScan("com.study.security.config.v1")
-@ComponentScan("com.study.security.config.v2")
-@SpringBootApplication(scanBasePackages = "com.study.security.controller")
+@ComponentScan(basePackages = {"com.study.security.config.v2", "com.study.security.controller"})
+@SpringBootApplication
 public class SecurityApplication {
 
 	public static void main(String[] args) {
