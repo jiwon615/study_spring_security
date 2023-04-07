@@ -1,5 +1,7 @@
 package com.study.security.controller.login;
 
+import com.study.security.domain.Account;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
@@ -12,12 +14,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @Controller
+@Slf4j
 public class LoginController {
 
     @GetMapping("/login")
     public String login(@RequestParam(value = "error", required = false) String error,
                         @RequestParam(value = "exception", required = false) String exception, Model model) {
-
+        log.info("===/login===");
         model.addAttribute("error", error);
         model.addAttribute("exception", exception);
         return "user/login/login";
@@ -25,6 +28,7 @@ public class LoginController {
 
     @GetMapping("/logout")
     public String logout(HttpServletRequest request, HttpServletResponse response) {
+        log.info("===/logout===");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // SecurityContextLogoutHandler 는 로그아웃 처리 하는 핸들러
@@ -32,5 +36,15 @@ public class LoginController {
             new SecurityContextLogoutHandler().logout(request, response, authentication); // 로그아웃 처리
         }
         return "redirect:/login";
+    }
+
+    @GetMapping("/denied")
+    public String denied(@RequestParam(value = "exception", required = false) String exception, Model model) {
+        log.info("===/denied===");
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Account account = (Account) authentication.getPrincipal();
+        model.addAttribute("username", account.getUsername());
+        model.addAttribute("exception", exception);
+        return "user/login/denied";
     }
 }

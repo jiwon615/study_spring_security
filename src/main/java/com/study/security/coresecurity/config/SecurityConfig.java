@@ -1,6 +1,6 @@
 package com.study.security.coresecurity.config;
 
-import com.study.security.coresecurity.handler.CustomAuthenticationSuccessHandler;
+import com.study.security.coresecurity.handler.CustomAccessDeniedHandler;
 import com.study.security.coresecurity.provider.CustomAuthenticationProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +17,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
@@ -60,6 +61,13 @@ public class SecurityConfig {
     }
 
     @Bean
+    public AccessDeniedHandler accessDeniedHandler() {
+        CustomAccessDeniedHandler accessDeniedHandler = new CustomAccessDeniedHandler();
+        accessDeniedHandler.setErrorPage("/denied");
+        return accessDeniedHandler;
+    }
+
+    @Bean
     protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // 인가 처리
         http.authorizeRequests()
@@ -78,6 +86,11 @@ public class SecurityConfig {
                 .successHandler(customAuthenticationSuccessHandler) // 인증 성공 시 후속처리
                 .failureHandler(customAuthenticationFailureHandler)
                 .permitAll(); // 로그인 화면은 인증 받지 않은 사용자도 접근 가능해야 함
+        
+        http
+                .exceptionHandling()
+                .accessDeniedHandler(accessDeniedHandler())
+        ;
         return http.build();
     }
 }
