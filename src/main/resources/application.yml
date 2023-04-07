@@ -4,11 +4,11 @@ spring:
     username: root
     password: Wldnjs1!@
     driver-class-name: com.mysql.cj.jdbc.Driver
-  security:
-    user:
-      name: user
-      password: 1111
-      roles: USER
+#  security:
+#    user:
+#      name: user
+#      password: 1111
+#      roles: USER
   # jpa setting
   jpa:
     hibernate:
