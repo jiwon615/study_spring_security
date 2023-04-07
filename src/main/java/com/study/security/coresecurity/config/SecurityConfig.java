@@ -1,5 +1,6 @@
 package com.study.security.coresecurity.config;
 
+import com.study.security.coresecurity.handler.CustomAuthenticationSuccessHandler;
 import com.study.security.coresecurity.provider.CustomAuthenticationProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,20 +10,22 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 @EnableWebSecurity
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
+
+    @Autowired
+    private AuthenticationSuccessHandler customAuthenticationSuccessHandler; // CustomAuthenticationSuccessHandler 주입됨
 
     @Autowired
     private AuthenticationDetailsSource authenticationDetailsSource;
@@ -68,6 +71,7 @@ public class SecurityConfig {
                 .loginProcessingUrl("/login_proc") // login.html에서 form태그 action="login_proc"과 동일하게 맞춰주어야 한다.
                 .defaultSuccessUrl("/")
                 .authenticationDetailsSource(authenticationDetailsSource)  // 인증 부가 기능 (사용자가 보내주는 파라미터 검증)
+                .successHandler(customAuthenticationSuccessHandler) // 인증 성공 시 후속처리
                 .permitAll(); // 로그인 화면은 인증 받지 않은 사용자도 접근 가능해야 함
         return http.build();
     }
