@@ -60,7 +60,11 @@ public class SecurityConfig {
                 .anyRequest().authenticated();
 
         http
-                .formLogin();
+                .formLogin()
+                .loginPage("/login")
+                .loginProcessingUrl("/login_proc") // login.html에서 form태그 action="login_proc"과 동일하게 맞춰주어야 한다.
+                .defaultSuccessUrl("/")
+                .permitAll(); // 로그인 화면은 인증 받지 않은 사용자도 접근 가능해야 함
         return http.build();
     }
 }
