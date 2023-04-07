@@ -3,6 +3,7 @@ package com.study.security.coresecurity.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.study.security.coresecurity.token.AjaxAuthenticationToken;
 import com.study.security.domain.AccountDto;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
@@ -19,6 +20,7 @@ import java.io.IOException;
  *
  * 이 필터의 작동 조건: AntPatchRequestMatcher("/api/login")로 요청정보와 매칭하고 요청 방식이 Ajax이면 필터 작동
  */
+@Slf4j
 public class AjaxLoginProcessingFilter extends AbstractAuthenticationProcessingFilter {
 
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -29,6 +31,7 @@ public class AjaxLoginProcessingFilter extends AbstractAuthenticationProcessingF
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
+        log.info("===AjaxLoginProcessingFilter attemptAuthentication()===");
         if (isAjax(request)) {
             throw new IllegalStateException("Authentication is not supported!!!");
         }

@@ -1,4 +1,4 @@
-package com.study.security.coresecurity.provider;
+package com.study.security.coresecurity.provider.ajax;
 
 import com.study.security.coresecurity.common.FormWebAuthenticationDetails;
 import com.study.security.coresecurity.token.AjaxAuthenticationToken;
