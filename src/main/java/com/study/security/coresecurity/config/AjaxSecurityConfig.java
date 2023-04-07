@@ -24,13 +24,13 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 @Order(0)
 @Slf4j
 public class AjaxSecurityConfig {
-
     private AuthenticationConfiguration authenticationConfiguration;
 
     @Autowired
     private void setAjaxSecurityConfig(AuthenticationConfiguration authenticationConfiguration) {
         this.authenticationConfiguration = authenticationConfiguration;
     }
+
     @Bean
     public AuthenticationProvider ajaxAuthenticationProvider() {
         return new AjaxAuthenticationProvider();
@@ -40,7 +40,7 @@ public class AjaxSecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         ProviderManager authenticationManager = (ProviderManager) authenticationConfiguration.getAuthenticationManager();
         authenticationManager.getProviders().add(ajaxAuthenticationProvider());
-        return authenticationConfiguration.getAuthenticationManager();
+        return authenticationManager;
     }
 
     @Bean
@@ -59,43 +59,34 @@ public class AjaxSecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain FilterChain(HttpSecurity http) throws Exception {
         http
                 .antMatcher("/api/**")
                 .authorizeRequests()
-                .antMatchers("/api/manager").hasRole("MANAGER")
+                .antMatchers("/api/message").hasRole("MANAGER")
                 .anyRequest().authenticated();
-        /**
-         * 필터처리
-         * addFilterBefore(): 실제 추가하고자 하는 필터가 기존 필터 앞에 위치할 때
-         * addFilter(): 가장 마지막에 위치할 때
-         * addFilterAfter(): 실제 추가하고자 하는 필터가 기존 필터 뒤에 위치할 때
-         * addFilterAt(): 현재 기존의 필터 위치를 대체하고자 할 때
-         */
-//        http
-//                .addFilterBefore(ajaxLoginProcessingFilter(), UsernamePasswordAuthenticationFilter.class); // UsernamePasswordAuthenticationFilter 필터 앞에 ajax 필터 위치하도록 한다.
+//                .and()
+//                .addFilterBefore(ajaxLoginProcessingFilter(), UsernamePasswordAuthenticationFilter.class);
 
         http
                 .exceptionHandling()
                 .authenticationEntryPoint(new AjaxLoginAuthenticationEntryPoint())
-                .accessDeniedHandler(new AjaxAccessDeniedHandler());
+                .accessDeniedHandler(ajaxAccessDeniedHandler());
 
-        http
-                .csrf().disable();
+        http.csrf().disable();
 
-        customConfigureAjax(http);
+        customConfigurerAjax(http);
 
         return http.build();
     }
 
-    private void customConfigureAjax(HttpSecurity http) throws Exception {
+    public void customConfigurerAjax(HttpSecurity http) throws Exception {
         http
                 .apply(new AjaxLoginConfigurer<>())
                 .successHandlerAjax(ajaxAuthenticationSuccessHandler())
                 .failureHandlerAjax(ajaxAuthenticationFailureHandler())
                 .setAuthenticationManager(authenticationManager(authenticationConfiguration))
-                .loginProcessingUrl("/api/login")
-        ;
+                .loginProcessingUrl("/api/login");
     }
 
 //    @Bean
@@ -104,7 +95,6 @@ public class AjaxSecurityConfig {
 //        ajaxLoginProcessingFilter.setAuthenticationManager(authenticationManager(authenticationConfiguration));
 //        ajaxLoginProcessingFilter.setAuthenticationSuccessHandler(ajaxAuthenticationSuccessHandler());
 //        ajaxLoginProcessingFilter.setAuthenticationFailureHandler(ajaxAuthenticationFailureHandler());
-//        return ajaxLoginProcessingFilter; // 인증 처리용 필터 생성
+//        return ajaxLoginProcessingFilter;
 //    }
-
 }

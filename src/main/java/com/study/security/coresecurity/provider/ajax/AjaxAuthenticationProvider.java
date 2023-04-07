@@ -41,13 +41,6 @@ public class AjaxAuthenticationProvider implements AuthenticationProvider {
             throw new BadCredentialsException("BadCredentialsException!!!");
         }
 
-        // id, password 외에도 secret_key에 대한 검증도 한다.
-        FormWebAuthenticationDetails formWebAuthenticationDetails = (FormWebAuthenticationDetails) authentication.getDetails();
-        String secretKey = formWebAuthenticationDetails.getSecretKey();
-        if (secretKey == null || !"secret".equals(secretKey)) {
-            throw new InsufficientAuthenticationException("InsufficientAuthenticationException!!!");
-        }
-
         // 인증에 성공한 인증 정보를 토큰객체로 만들어서 리턴하게 한다.
         return new AjaxAuthenticationToken(accountContext.getAccount(), null, accountContext.getAuthorities());
     }
