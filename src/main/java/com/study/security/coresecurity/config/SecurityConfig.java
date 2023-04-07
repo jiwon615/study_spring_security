@@ -17,6 +17,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 @EnableWebSecurity
@@ -26,6 +27,9 @@ public class SecurityConfig {
 
     @Autowired
     private AuthenticationSuccessHandler customAuthenticationSuccessHandler; // CustomAuthenticationSuccessHandler 주입됨
+
+    @Autowired
+    private AuthenticationFailureHandler customAuthenticationFailureHandler;
 
     @Autowired
     private AuthenticationDetailsSource authenticationDetailsSource;
@@ -59,7 +63,7 @@ public class SecurityConfig {
     protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // 인가 처리
         http.authorizeRequests()
-                .antMatchers("/", "/users").permitAll()
+                .antMatchers("/", "/users", "user/login/**", "/login*").permitAll()
                 .antMatchers("/mypage").hasRole("USER")
                 .antMatchers("/messages").hasRole("MANAGER")
                 .antMatchers("/config").hasRole("ADMIN")
@@ -72,6 +76,7 @@ public class SecurityConfig {
                 .defaultSuccessUrl("/")
                 .authenticationDetailsSource(authenticationDetailsSource)  // 인증 부가 기능 (사용자가 보내주는 파라미터 검증)
                 .successHandler(customAuthenticationSuccessHandler) // 인증 성공 시 후속처리
+                .failureHandler(customAuthenticationFailureHandler)
                 .permitAll(); // 로그인 화면은 인증 받지 않은 사용자도 접근 가능해야 함
         return http.build();
     }
