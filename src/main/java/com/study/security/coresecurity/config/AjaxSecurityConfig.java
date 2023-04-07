@@ -1,5 +1,7 @@
 package com.study.security.coresecurity.config;
 
+import com.study.security.coresecurity.common.ajax.AjaxAccessDeniedHandler;
+import com.study.security.coresecurity.common.ajax.AjaxLoginAuthenticationEntryPoint;
 import com.study.security.coresecurity.filter.AjaxLoginProcessingFilter;
 import com.study.security.coresecurity.handler.ajax.AjaxAuthenticationFailureHandler;
 import com.study.security.coresecurity.handler.ajax.AjaxAuthenticationSuccessHandler;
@@ -14,6 +16,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -55,6 +58,7 @@ public class AjaxSecurityConfig {
         http
                 .antMatcher("/api/**")
                 .authorizeRequests()
+                .antMatchers("/api/manager").hasRole("MANAGER")
                 .anyRequest().authenticated();
         http
                 .csrf().disable();
@@ -66,8 +70,12 @@ public class AjaxSecurityConfig {
          * addFilterAt(): 현재 기존의 필터 위치를 대체하고자 할 때
          */
         http
-                .addFilterBefore(ajaxLoginProcessingFilter(), UsernamePasswordAuthenticationFilter.class); // UsernamePasswordAuthenticationFilter 필터 앞에 ajax 필터 위치하도록 한다.
+                .addFilterBefore(ajaxLoginProcessingFilter(), AjaxLoginProcessingFilter.class); // UsernamePasswordAuthenticationFilter 필터 앞에 ajax 필터 위치하도록 한다.
 
+        http
+                .exceptionHandling()
+                .authenticationEntryPoint(new AjaxLoginAuthenticationEntryPoint())
+                .accessDeniedHandler(new AjaxAccessDeniedHandler());
 
         return http.build();
     }
