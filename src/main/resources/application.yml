@@ -9,3 +9,22 @@ spring:
       name: user
       password: 1111
       roles: USER
+  # jpa setting
+  jpa:
+    hibernate:
+      ddl-auto: create
+      format_sql: true
+      jdbc:
+        lob:
+          non_contextual_creation: true
+  thymeleaf:
+    cache: true
+
+  devtools:
+    livereload:
+      enabled: true
+    restart:
+      enabled: true
+logging:
+  level:
+    org.hibernate.SQL: debug
