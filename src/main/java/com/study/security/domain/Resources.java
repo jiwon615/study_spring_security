@@ -1,0 +1,12 @@
+package com.study.security.domain;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
+@Entity
+public class Resources {
+
+    @Id @GeneratedValue
+    private Long id;
+}
